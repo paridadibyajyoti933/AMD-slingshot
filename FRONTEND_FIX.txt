@@ -1,0 +1,33 @@
+// Updated handleUpload function for ResearchCopilot.jsx
+// Replace lines 58-65 with this:
+
+            if (response.ok) {
+                let message = `✅ Paper uploaded successfully!\n\nTitle: ${data.title}\nPaper ID: ${data.paper_id}\nStatus: ${data.status}`;
+                
+                if (data.text_length) {
+                    message += `\nText extracted: ${data.text_length} characters`;
+                }
+                
+                if (data.preview) {
+                    message += `\n\n📄 Text Preview:\n${data.preview}`;
+                }
+                
+                if (data.summary) {
+                    message += `\n\n📝 AI Summary:\n${data.summary}`;
+                }
+                
+                if (data.key_contributions) {
+                    message += `\n\n🎯 Key Contributions:\n${data.key_contributions}`;
+                }
+                
+                if (data.note) {
+                    message += `\n\n⚠️ ${data.note}`;
+                }
+                
+                alert(message);
+                setSelectedFile(null);
+                document.getElementById('pdf-upload').value = '';
+                loadPapers();
+            } else {
+                setError(`Upload failed: ${data.error || 'Unknown error'}`);
+            }
