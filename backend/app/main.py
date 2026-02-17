@@ -4,6 +4,8 @@ DeepWork OS Backend
 """
 from fastapi import FastAPI, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
+from .routes import planner, meetings, research, knowledge
+from .database import init_db, close_db
 
 # Create FastAPI app
 app = FastAPI(
@@ -19,6 +21,26 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include routers
+app.include_router(planner.router, prefix="/api/v1")
+app.include_router(meetings.router, prefix="/api/v1")
+app.include_router(research.router, prefix="/api/v1")
+app.include_router(knowledge.router, prefix="/api/v1")
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Initialize database on startup"""
+    await init_db()
+    print("✅ Database initialized")
+
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    """Close database connections on shutdown"""
+    await close_db()
+    print("Database connections closed")
 
 
 @app.get("/")

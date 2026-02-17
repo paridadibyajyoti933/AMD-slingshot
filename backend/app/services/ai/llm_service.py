@@ -4,7 +4,7 @@ Handles local LLM inference for summarization and text generation
 """
 import httpx
 from typing import Optional, List, Dict
-from ..config import settings
+from ...config import settings
 
 
 class LLMService:

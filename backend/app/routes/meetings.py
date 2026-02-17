@@ -79,7 +79,7 @@ async def upload_transcript(
     """
     # Read transcript
     content = await file.read()
-    transcript = content.decode('utf-8')
+    transcript = content.decode('utf-8', errors='ignore')
     
     # Create meeting
     meeting = Meeting(

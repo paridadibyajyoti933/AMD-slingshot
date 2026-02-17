@@ -2,10 +2,13 @@
 Embedding Service - SentenceTransformers
 Generates vector embeddings for semantic search
 """
-from sentence_transformers import SentenceTransformer
+try:
+    from sentence_transformers import SentenceTransformer
+except ImportError:
+    SentenceTransformer = None
 from typing import List
 import numpy as np
-from ..config import settings
+from ...config import settings
 
 
 class EmbeddingService:

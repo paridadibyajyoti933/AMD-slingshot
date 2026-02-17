@@ -45,7 +45,10 @@ class ScheduleOptimizer:
         
         # Deadline urgency
         if task.deadline:
-            time_until_deadline = (task.deadline - current_time).total_seconds() / 3600  # hours
+            # Ensure both datetimes are naive for comparison (SQLite compatibility)
+            deadline = task.deadline.replace(tzinfo=None) if task.deadline.tzinfo else task.deadline
+            current = current_time.replace(tzinfo=None) if current_time.tzinfo else current_time
+            time_until_deadline = (deadline - current).total_seconds() / 3600  # hours
             
             if time_until_deadline < 0:
                 # Overdue

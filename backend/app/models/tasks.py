@@ -32,20 +32,20 @@ class Task(Base):
     description = Column(Text)
     
     # Scheduling
-    deadline = Column(DateTime(timezone=True))
+    deadline = Column(DateTime)
     estimated_hours = Column(Float, default=1.0)
-    scheduled_start = Column(DateTime(timezone=True))
-    scheduled_end = Column(DateTime(timezone=True))
+    scheduled_start = Column(DateTime)
+    scheduled_end = Column(DateTime)
     
-    # Priority & Status
-    priority = Column(Enum(TaskPriority), default=TaskPriority.MEDIUM)
-    status = Column(Enum(TaskStatus), default=TaskStatus.TODO)
+    # Priority & Status (using String for SQLite compatibility)
+    priority = Column(String(20), default="medium")
+    status = Column(String(20), default="todo")
     priority_score = Column(Float, default=0.0)  # AI-calculated priority
     
     # Metadata
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-    completed_at = Column(DateTime(timezone=True))
+    created_at = Column(DateTime, server_default=func.now())
+    updated_at = Column(DateTime, onupdate=func.now())
+    completed_at = Column(DateTime)
     
     # Tags and categorization
     tags = Column(String(500))  # Comma-separated tags
@@ -58,8 +58,8 @@ class DeepWorkBlock(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String(200))
-    start_time = Column(DateTime(timezone=True), nullable=False)
-    end_time = Column(DateTime(timezone=True), nullable=False)
+    start_time = Column(DateTime, nullable=False)
+    end_time = Column(DateTime, nullable=False)
     
     # Associated task (optional)
     task_id = Column(Integer)
@@ -68,4 +68,4 @@ class DeepWorkBlock(Base):
     focus_area = Column(String(200))
     energy_level = Column(String(50))  # high, medium, low
     
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    created_at = Column(DateTime, server_default=func.now())

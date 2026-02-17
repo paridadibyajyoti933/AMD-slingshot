@@ -9,9 +9,9 @@ OLLAMA_BASE_URL = "http://localhost:11434"
 def generate_summary(text: str, max_length: int = 500) -> str:
     """Generate a summary of the given text using Ollama"""
     try:
-        prompt = f"""Please provide a concise summary of the following research paper text in about 200 words. Focus on the main findings and contributions:
+        prompt = f"""Please provide a concise summary of the following research paper text in about 150 words. Focus on the main findings and contributions:
 
-{text[:3000]}
+{text[:2000]}
 
 Summary:"""
 
@@ -23,10 +23,11 @@ Summary:"""
                 "stream": False,
                 "options": {
                     "temperature": 0.7,
-                    "num_predict": 300
+                    "num_predict": 200,
+                    "num_ctx": 2048
                 }
             },
-            timeout=60
+            timeout=120
         )
         
         if response.status_code == 200:
@@ -44,7 +45,7 @@ def extract_key_points(text: str) -> str:
     try:
         prompt = f"""From the following research paper, extract 3-5 key contributions or findings as bullet points:
 
-{text[:3000]}
+{text[:2000]}
 
 Key Contributions:"""
 
@@ -56,10 +57,11 @@ Key Contributions:"""
                 "stream": False,
                 "options": {
                     "temperature": 0.5,
-                    "num_predict": 200
+                    "num_predict": 150,
+                    "num_ctx": 2048
                 }
             },
-            timeout=60
+            timeout=120
         )
         
         if response.status_code == 200:

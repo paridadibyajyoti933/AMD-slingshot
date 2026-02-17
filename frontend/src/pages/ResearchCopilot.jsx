@@ -6,6 +6,7 @@ const ResearchCopilot = () => {
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [error, setError] = useState('');
+    const [uploadedPaper, setUploadedPaper] = useState(null);
 
     useEffect(() => {
         loadPapers();
@@ -56,45 +57,8 @@ const ResearchCopilot = () => {
             console.log('Response data:', data);
 
             if (response.ok) {
-                let message = `✅ Paper uploaded successfully!
-
-Title: ${data.title}
-Paper ID: ${data.paper_id}
-Status: ${data.status}`;
-                
-                if (data.text_length) {
-                    message += `
-Text extracted: ${data.text_length} characters`;
-                }
-                
-                if (data.preview) {
-                    message += `
-
-📄 Text Preview:
-${data.preview}`;
-                }
-                
-                if (data.summary) {
-                    message += `
-
-📝 AI Summary:
-${data.summary}`;
-                }
-                
-                if (data.key_contributions) {
-                    message += `
-
-🎯 Key Contributions:
-${data.key_contributions}`;
-                }
-                
-                if (data.note) {
-                    message += `
-
-⚠️ ${data.note}`;
-                }
-                
-                alert(message);
+                // Store the uploaded paper data
+                setUploadedPaper(data);
                 setSelectedFile(null);
                 document.getElementById('pdf-upload').value = '';
                 loadPapers();
@@ -217,6 +181,121 @@ ${data.key_contributions}`;
                         Backend: http://localhost:8000 • Max size: 50MB
                     </p>
                 </div>
+
+                {/* AI Summary Display */}
+                {uploadedPaper && (
+                    <div style={{
+                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
+                        padding: '40px',
+                        borderRadius: '16px',
+                        border: '1px solid rgba(102, 126, 234, 0.3)',
+                        marginBottom: '40px',
+                        animation: 'slideIn 0.5s ease-out'
+                    }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '24px' }}>
+                            <div>
+                                <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎉</div>
+                                <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
+                                    {uploadedPaper.status === 'processed' ? 'AI Analysis Complete!' : 'Upload Successful!'}
+                                </h2>
+                                <p style={{ color: '#a0a0a0', fontSize: '16px' }}>
+                                    {uploadedPaper.title}
+                                </p>
+                            </div>
+                            <button
+                                onClick={() => setUploadedPaper(null)}
+                                style={{
+                                    padding: '8px 16px',
+                                    background: 'rgba(255, 255, 255, 0.1)',
+                                    border: '1px solid rgba(255, 255, 255, 0.2)',
+                                    borderRadius: '6px',
+                                    color: 'white',
+                                    cursor: 'pointer',
+                                    fontSize: '14px'
+                                }}
+                            >
+                                ✕ Close
+                            </button>
+                        </div>
+
+                        {uploadedPaper.summary && (
+                            <div style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                padding: '24px',
+                                borderRadius: '12px',
+                                marginBottom: '20px'
+                            }}>
+                                <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span>📝</span> AI Summary
+                                </h3>
+                                <p style={{ color: '#e0e0e0', lineHeight: '1.8', fontSize: '16px', whiteSpace: 'pre-wrap' }}>
+                                    {uploadedPaper.summary}
+                                </p>
+                            </div>
+                        )}
+
+                        {uploadedPaper.key_contributions && (
+                            <div style={{
+                                background: 'rgba(255, 255, 255, 0.05)',
+                                padding: '24px',
+                                borderRadius: '12px',
+                                marginBottom: '20px'
+                            }}>
+                                <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span>🎯</span> Key Contributions
+                                </h3>
+                                <div style={{ color: '#e0e0e0', lineHeight: '1.8', fontSize: '16px', whiteSpace: 'pre-wrap' }}>
+                                    {uploadedPaper.key_contributions}
+                                </div>
+                            </div>
+                        )}
+
+                        {uploadedPaper.text_length && (
+                            <div style={{
+                                display: 'flex',
+                                gap: '20px',
+                                flexWrap: 'wrap',
+                                marginBottom: '20px'
+                            }}>
+                                <div style={{
+                                    background: 'rgba(74, 222, 128, 0.1)',
+                                    padding: '12px 20px',
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(74, 222, 128, 0.3)'
+                                }}>
+                                    <div style={{ fontSize: '12px', color: '#4ade80', marginBottom: '4px' }}>Text Extracted</div>
+                                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#4ade80' }}>
+                                        {uploadedPaper.text_length.toLocaleString()} chars
+                                    </div>
+                                </div>
+                                <div style={{
+                                    background: 'rgba(102, 126, 234, 0.1)',
+                                    padding: '12px 20px',
+                                    borderRadius: '8px',
+                                    border: '1px solid rgba(102, 126, 234, 0.3)'
+                                }}>
+                                    <div style={{ fontSize: '12px', color: '#667eea', marginBottom: '4px' }}>Status</div>
+                                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#667eea' }}>
+                                        {uploadedPaper.status === 'processed' ? '✓ Processed' : uploadedPaper.status}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {uploadedPaper.note && (
+                            <div style={{
+                                background: 'rgba(251, 191, 36, 0.1)',
+                                border: '1px solid rgba(251, 191, 36, 0.3)',
+                                padding: '16px',
+                                borderRadius: '8px',
+                                color: '#fbbf24',
+                                fontSize: '14px'
+                            }}>
+                                ⚠️ {uploadedPaper.note}
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Papers List */}
                 <div>

@@ -2,12 +2,15 @@
 FAISS Vector Store Service
 Manages vector embeddings and similarity search
 """
-import faiss
+try:
+    import faiss
+except ImportError:
+    faiss = None
 import numpy as np
 import pickle
 from pathlib import Path
 from typing import List, Tuple, Optional
-from ..config import settings
+from ...config import settings
 
 
 class FAISSStore:
