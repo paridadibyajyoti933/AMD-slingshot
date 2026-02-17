@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Calendar as CalendarIcon, Zap, AlertTriangle } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import theme from '../styles/theme';
 import { plannerAPI } from '../services/api';
-import TaskCard from '../components/TaskCard';
 
 const WeeklyPlanner = () => {
     const [tasks, setTasks] = useState([]);
-    const [schedule, setSchedule] = useState(null);
     const [showNewTask, setShowNewTask] = useState(false);
     const [newTask, setNewTask] = useState({
         title: '',
@@ -43,178 +42,283 @@ const WeeklyPlanner = () => {
         }
     };
 
-    const handleOptimizeSchedule = async () => {
+    const handleUpdateTask = async (taskId, updates) => {
         try {
-            const result = await plannerAPI.optimizeSchedule();
-            setSchedule(result);
+            await plannerAPI.updateTask(taskId, updates);
+            await loadTasks();
         } catch (error) {
-            console.error('Failed to optimize schedule:', error);
+            console.error('Failed to update task:', error);
         }
     };
 
     return (
-        <div className="p-8 max-w-7xl mx-auto">
-            <div className="mb-8 flex items-center justify-between">
-                <div>
-                    <h1 className="text-4xl font-bold mb-2">Weekly Planner</h1>
-                    <p className="text-dark-400">AI-optimized task scheduling</p>
+        <div style={{
+            minHeight: '100vh',
+            background: theme.colors.background,
+            fontFamily: theme.typography.fontFamily,
+        }}>
+            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: theme.spacing.xxl }}>
+                {/* Header */}
+                <div style={{ marginBottom: theme.spacing.xxxl }}>
+                    <Link to="/dashboard" style={{
+                        color: theme.colors.textSecondary,
+                        textDecoration: 'none',
+                        fontSize: theme.typography.small,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        display: 'inline-block',
+                        marginBottom: theme.spacing.md
+                    }}>
+                        ← Dashboard
+                    </Link>
+                    <h1 style={{
+                        fontSize: theme.typography.hero,
+                        fontWeight: theme.typography.black,
+                        lineHeight: '1',
+                        marginBottom: theme.spacing.md,
+                        letterSpacing: '-0.02em'
+                    }}>
+                        PLANNER
+                    </h1>
+                    <p style={{
+                        fontSize: theme.typography.h5,
+                        color: theme.colors.textSecondary,
+                        maxWidth: '600px'
+                    }}>
+                        Organize your week with AI-powered task management.
+                    </p>
                 </div>
-                <div className="flex space-x-3">
-                    <button onClick={handleOptimizeSchedule} className="btn-secondary flex items-center space-x-2">
-                        <Zap className="w-4 h-4" />
-                        <span>Optimize Schedule</span>
-                    </button>
-                    <button onClick={() => setShowNewTask(true)} className="btn-primary flex items-center space-x-2">
-                        <Plus className="w-4 h-4" />
-                        <span>New Task</span>
-                    </button>
-                </div>
-            </div>
 
-            {/* New Task Modal */}
-            {showNewTask && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="card max-w-lg w-full mx-4">
-                        <h2 className="text-2xl font-bold mb-4">Create New Task</h2>
-                        <form onSubmit={handleCreateTask} className="space-y-4">
+                {/* New Task Button */}
+                <button
+                    onClick={() => setShowNewTask(!showNewTask)}
+                    style={{
+                        padding: `${theme.spacing.md} ${theme.spacing.xl}`,
+                        background: showNewTask ? theme.colors.textPrimary : theme.colors.accent,
+                        color: theme.colors.surface,
+                        border: 'none',
+                        fontSize: theme.typography.body,
+                        fontWeight: theme.typography.bold,
+                        cursor: 'pointer',
+                        marginBottom: theme.spacing.xl,
+                        fontFamily: theme.typography.fontFamily
+                    }}
+                >
+                    {showNewTask ? 'Cancel' : '+ New Task'}
+                </button>
+
+                {/* New Task Form */}
+                {showNewTask && (
+                    <form onSubmit={handleCreateTask} style={{
+                        background: theme.colors.surface,
+                        border: `2px solid ${theme.colors.textPrimary}`,
+                        padding: theme.spacing.xl,
+                        marginBottom: theme.spacing.xxxl
+                    }}>
+                        <h2 style={{
+                            fontSize: theme.typography.h3,
+                            fontWeight: theme.typography.bold,
+                            marginBottom: theme.spacing.lg
+                        }}>
+                            Create Task
+                        </h2>
+
+                        <input
+                            type="text"
+                            value={newTask.title}
+                            onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                            placeholder="Task title"
+                            required
+                            style={{
+                                width: '100%',
+                                padding: theme.spacing.md,
+                                border: `1px solid ${theme.colors.border}`,
+                                fontSize: theme.typography.body,
+                                marginBottom: theme.spacing.md,
+                                fontFamily: theme.typography.fontFamily,
+                                outline: 'none'
+                            }}
+                        />
+
+                        <textarea
+                            value={newTask.description}
+                            onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                            placeholder="Description"
+                            rows="4"
+                            style={{
+                                width: '100%',
+                                padding: theme.spacing.md,
+                                border: `1px solid ${theme.colors.border}`,
+                                fontSize: theme.typography.body,
+                                marginBottom: theme.spacing.md,
+                                fontFamily: theme.typography.fontFamily,
+                                outline: 'none',
+                                resize: 'vertical'
+                            }}
+                        />
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: theme.spacing.md, marginBottom: theme.spacing.lg }}>
                             <div>
-                                <label className="block text-sm font-medium mb-2">Title</label>
+                                <label style={{ fontSize: theme.typography.small, color: theme.colors.textSecondary, display: 'block', marginBottom: theme.spacing.xs }}>
+                                    Deadline
+                                </label>
                                 <input
-                                    type="text"
-                                    value={newTask.title}
-                                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
-                                    className="input-field"
-                                    required
+                                    type="datetime-local"
+                                    value={newTask.deadline}
+                                    onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
+                                    style={{
+                                        width: '100%',
+                                        padding: theme.spacing.sm,
+                                        border: `1px solid ${theme.colors.border}`,
+                                        fontSize: theme.typography.body,
+                                        fontFamily: theme.typography.fontFamily
+                                    }}
                                 />
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium mb-2">Description</label>
-                                <textarea
-                                    value={newTask.description}
-                                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                                    className="input-field"
-                                    rows="3"
+                                <label style={{ fontSize: theme.typography.small, color: theme.colors.textSecondary, display: 'block', marginBottom: theme.spacing.xs }}>
+                                    Hours
+                                </label>
+                                <input
+                                    type="number"
+                                    value={newTask.estimated_hours}
+                                    onChange={(e) => setNewTask({ ...newTask, estimated_hours: parseInt(e.target.value) })}
+                                    min="1"
+                                    style={{
+                                        width: '100%',
+                                        padding: theme.spacing.sm,
+                                        border: `1px solid ${theme.colors.border}`,
+                                        fontSize: theme.typography.body,
+                                        fontFamily: theme.typography.fontFamily
+                                    }}
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Deadline</label>
-                                    <input
-                                        type="datetime-local"
-                                        value={newTask.deadline}
-                                        onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
-                                        className="input-field"
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-sm font-medium mb-2">Estimated Hours</label>
-                                    <input
-                                        type="number"
-                                        value={newTask.estimated_hours}
-                                        onChange={(e) => setNewTask({ ...newTask, estimated_hours: parseFloat(e.target.value) })}
-                                        className="input-field"
-                                        min="0.5"
-                                        step="0.5"
-                                    />
-                                </div>
-                            </div>
-
                             <div>
-                                <label className="block text-sm font-medium mb-2">Priority</label>
+                                <label style={{ fontSize: theme.typography.small, color: theme.colors.textSecondary, display: 'block', marginBottom: theme.spacing.xs }}>
+                                    Priority
+                                </label>
                                 <select
                                     value={newTask.priority}
                                     onChange={(e) => setNewTask({ ...newTask, priority: e.target.value })}
-                                    className="input-field"
+                                    style={{
+                                        width: '100%',
+                                        padding: theme.spacing.sm,
+                                        border: `1px solid ${theme.colors.border}`,
+                                        fontSize: theme.typography.body,
+                                        fontFamily: theme.typography.fontFamily
+                                    }}
                                 >
                                     <option value="low">Low</option>
                                     <option value="medium">Medium</option>
                                     <option value="high">High</option>
-                                    <option value="urgent">Urgent</option>
                                 </select>
                             </div>
+                        </div>
 
-                            <div className="flex space-x-3">
-                                <button type="submit" className="btn-primary flex-1">Create Task</button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowNewTask(false)}
-                                    className="btn-secondary flex-1"
-                                >
-                                    Cancel
-                                </button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
+                        <button
+                            type="submit"
+                            style={{
+                                padding: `${theme.spacing.md} ${theme.spacing.xl}`,
+                                background: theme.colors.accent,
+                                color: theme.colors.surface,
+                                border: 'none',
+                                fontSize: theme.typography.body,
+                                fontWeight: theme.typography.bold,
+                                cursor: 'pointer',
+                                fontFamily: theme.typography.fontFamily
+                            }}
+                        >
+                            Create Task
+                        </button>
+                    </form>
+                )}
 
-            {/* Optimized Schedule */}
-            {schedule && (
-                <div className="mb-8 card bg-gradient-to-br from-primary-600/20 to-purple-600/20 border-primary-600/30">
-                    <h2 className="text-xl font-bold mb-4 flex items-center space-x-2">
-                        <Zap className="w-5 h-5 text-primary-400" />
-                        <span>Optimized Schedule</span>
+                {/* Tasks List */}
+                <div>
+                    <h2 style={{
+                        fontSize: theme.typography.h3,
+                        fontWeight: theme.typography.black,
+                        marginBottom: theme.spacing.lg
+                    }}>
+                        Tasks ({tasks.length})
                     </h2>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                        <div className="bg-dark-800/50 rounded-lg p-4">
-                            <p className="text-dark-400 text-sm">Total Tasks</p>
-                            <p className="text-2xl font-bold">{schedule.total_tasks}</p>
+                    {tasks.length === 0 ? (
+                        <div style={{
+                            background: theme.colors.surface,
+                            border: `1px solid ${theme.colors.border}`,
+                            padding: theme.spacing.xxl,
+                            textAlign: 'center'
+                        }}>
+                            <p style={{
+                                fontSize: theme.typography.h5,
+                                color: theme.colors.textSecondary
+                            }}>
+                                No tasks yet
+                            </p>
                         </div>
-                        <div className="bg-dark-800/50 rounded-lg p-4">
-                            <p className="text-dark-400 text-sm">Scheduled</p>
-                            <p className="text-2xl font-bold text-green-400">{schedule.scheduled_tasks}</p>
-                        </div>
-                        <div className="bg-dark-800/50 rounded-lg p-4">
-                            <p className="text-dark-400 text-sm">At Risk</p>
-                            <p className="text-2xl font-bold text-red-400">{schedule.deadline_risks?.length || 0}</p>
-                        </div>
-                    </div>
-
-                    {schedule.deep_work_suggestions?.length > 0 && (
-                        <div>
-                            <h3 className="font-bold mb-3">Suggested Deep Work Blocks</h3>
-                            <div className="space-y-2">
-                                {schedule.deep_work_suggestions.slice(0, 5).map((block, idx) => (
-                                    <div key={idx} className="bg-dark-800/50 rounded-lg p-3 flex items-center justify-between">
-                                        <div>
-                                            <p className="font-medium">{block.title}</p>
-                                            <p className="text-sm text-dark-400">
-                                                {new Date(block.start_time).toLocaleString()} - {new Date(block.end_time).toLocaleTimeString()}
-                                            </p>
-                                        </div>
-                                        <span className={`px-2 py-1 rounded text-xs ${block.energy_level === 'high' ? 'bg-green-600/20 text-green-400' : 'bg-yellow-600/20 text-yellow-400'
-                                            }`}>
-                                            {block.energy_level} energy
-                                        </span>
+                    ) : (
+                        <div style={{ display: 'grid', gap: theme.spacing.sm }}>
+                            {tasks.map((task) => (
+                                <div
+                                    key={task.id}
+                                    style={{
+                                        background: theme.colors.surface,
+                                        border: `1px solid ${theme.colors.border}`,
+                                        padding: theme.spacing.lg,
+                                    }}
+                                >
+                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: theme.spacing.sm }}>
+                                        <h3 style={{
+                                            fontSize: theme.typography.h5,
+                                            fontWeight: theme.typography.bold,
+                                            flex: 1
+                                        }}>
+                                            {task.title}
+                                        </h3>
+                                        <select
+                                            value={task.status}
+                                            onChange={(e) => handleUpdateTask(task.id, { status: e.target.value })}
+                                            style={{
+                                                padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
+                                                border: `1px solid ${theme.colors.border}`,
+                                                fontSize: theme.typography.small,
+                                                fontFamily: theme.typography.fontFamily,
+                                                textTransform: 'uppercase',
+                                                fontWeight: theme.typography.bold
+                                            }}
+                                        >
+                                            <option value="todo">To Do</option>
+                                            <option value="in_progress">In Progress</option>
+                                            <option value="completed">Completed</option>
+                                        </select>
                                     </div>
-                                ))}
-                            </div>
+
+                                    {task.description && (
+                                        <p style={{
+                                            fontSize: theme.typography.body,
+                                            color: theme.colors.textSecondary,
+                                            marginBottom: theme.spacing.sm
+                                        }}>
+                                            {task.description}
+                                        </p>
+                                    )}
+
+                                    <div style={{ display: 'flex', gap: theme.spacing.md, fontSize: theme.typography.small, color: theme.colors.textSecondary }}>
+                                        {task.deadline && (
+                                            <span>Due: {new Date(task.deadline).toLocaleDateString()}</span>
+                                        )}
+                                        <span>{task.estimated_hours}h</span>
+                                        <span style={{ textTransform: 'uppercase' }}>{task.priority}</span>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     )}
                 </div>
-            )}
-
-            {/* Tasks List */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tasks.map((task) => (
-                    <TaskCard key={task.id} task={task} />
-                ))}
             </div>
-
-            {tasks.length === 0 && (
-                <div className="card text-center py-20">
-                    <CalendarIcon className="w-16 h-16 mx-auto text-dark-600 mb-4" />
-                    <p className="text-dark-400 mb-4">No tasks yet. Create your first task to get started!</p>
-                    <button onClick={() => setShowNewTask(true)} className="btn-primary">
-                        <Plus className="w-4 h-4 inline mr-2" />
-                        Create Task
-                    </button>
-                </div>
-            )}
         </div>
     );
 };

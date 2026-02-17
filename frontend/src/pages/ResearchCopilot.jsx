@@ -1,16 +1,43 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import theme from '../styles/theme';
 
 const ResearchCopilot = () => {
     const [papers, setPapers] = useState([]);
     const [uploading, setUploading] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
-    const [error, setError] = useState('');
-    const [uploadedPaper, setUploadedPaper] = useState(null);
 
-    useEffect(() => {
-        loadPapers();
-    }, []);
+    const handleFileSelect = (e) => {
+        const file = e.target.files[0];
+        if (file && file.type === 'application/pdf') {
+            setSelectedFile(file);
+        }
+    };
+
+    const handleUpload = async () => {
+        if (!selectedFile) return;
+
+        setUploading(true);
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        try {
+            const response = await fetch('http://localhost:8000/api/v1/research/upload', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (response.ok) {
+                setSelectedFile(null);
+                document.getElementById('pdf-upload').value = '';
+                loadPapers();
+            }
+        } catch (error) {
+            console.error('Upload failed:', error);
+        } finally {
+            setUploading(false);
+        }
+    };
 
     const loadPapers = async () => {
         try {
@@ -19,382 +46,162 @@ const ResearchCopilot = () => {
             setPapers(data);
         } catch (error) {
             console.error('Failed to load papers:', error);
-            setError('Failed to connect to backend');
         }
     };
 
-    const handleFileSelect = (e) => {
-        const file = e.target.files[0];
-        if (file && file.type === 'application/pdf') {
-            setSelectedFile(file);
-            setError('');
-        } else {
-            alert('Please select a PDF file');
-        }
-    };
-
-    const handleUpload = async () => {
-        if (!selectedFile) {
-            alert('Please select a PDF file first');
-            return;
-        }
-
-        setUploading(true);
-        setError('');
-        const formData = new FormData();
-        formData.append('file', selectedFile);
-
-        try {
-            console.log('Uploading to: http://localhost:8000/api/v1/research/upload');
-            const response = await fetch('http://localhost:8000/api/v1/research/upload', {
-                method: 'POST',
-                body: formData,
-                mode: 'cors'
-            });
-
-            console.log('Response status:', response.status);
-            const data = await response.json();
-            console.log('Response data:', data);
-
-            if (response.ok) {
-                // Store the uploaded paper data
-                setUploadedPaper(data);
-                setSelectedFile(null);
-                document.getElementById('pdf-upload').value = '';
-                loadPapers();
-            } else {
-                setError(`Upload failed: ${data.error || 'Unknown error'}`);
-            }
-        } catch (error) {
-            console.error('Upload error:', error);
-            setError(`Upload failed: ${error.message}. Check console for details.`);
-        } finally {
-            setUploading(false);
-        }
-    };
+    React.useEffect(() => {
+        loadPapers();
+    }, []);
 
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-            color: 'white',
-            padding: '40px'
+            background: theme.colors.background,
+            fontFamily: theme.typography.fontFamily,
         }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div style={{ maxWidth: '1400px', margin: '0 auto', padding: theme.spacing.xxl }}>
                 {/* Header */}
-                <div style={{ marginBottom: '40px' }}>
-                    <Link to="/dashboard" style={{ color: '#667eea', textDecoration: 'none', fontSize: '14px' }}>
-                        ← Back to Dashboard
+                <div style={{ marginBottom: theme.spacing.xxxl }}>
+                    <Link to="/dashboard" style={{
+                        color: theme.colors.textSecondary,
+                        textDecoration: 'none',
+                        fontSize: theme.typography.small,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.1em',
+                        display: 'inline-block',
+                        marginBottom: theme.spacing.md
+                    }}>
+                        ← Dashboard
                     </Link>
-                    <h1 style={{ fontSize: '48px', marginTop: '20px', marginBottom: '10px', fontWeight: 'bold' }}>
-                        Research Copilot
+                    <h1 style={{
+                        fontSize: theme.typography.hero,
+                        fontWeight: theme.typography.black,
+                        lineHeight: '1',
+                        marginBottom: theme.spacing.md,
+                        letterSpacing: '-0.02em'
+                    }}>
+                        RESEARCH
                     </h1>
-                    <p style={{ color: '#a0a0a0', fontSize: '18px' }}>
-                        Upload PDFs and get AI-powered summaries, citations, and insights
+                    <p style={{
+                        fontSize: theme.typography.h5,
+                        color: theme.colors.textSecondary,
+                        maxWidth: '600px'
+                    }}>
+                        Upload research papers and get AI-powered summaries.
                     </p>
                 </div>
 
-                {/* Error Message */}
-                {error && (
-                    <div style={{
-                        background: 'rgba(239, 68, 68, 0.2)',
-                        border: '1px solid #ef4444',
-                        padding: '16px',
-                        borderRadius: '8px',
-                        marginBottom: '20px',
-                        color: '#fca5a5'
-                    }}>
-                        ⚠️ {error}
-                    </div>
-                )}
-
                 {/* Upload Section */}
                 <div style={{
-                    background: 'rgba(255,255,255,0.05)',
-                    padding: '40px',
-                    borderRadius: '16px',
-                    border: '2px dashed rgba(102, 126, 234, 0.5)',
-                    marginBottom: '40px',
-                    textAlign: 'center'
+                    background: theme.colors.surface,
+                    border: `1px solid ${theme.colors.border}`,
+                    padding: theme.spacing.xl,
+                    marginBottom: theme.spacing.xxxl
                 }}>
-                    <div style={{ fontSize: '60px', marginBottom: '20px' }}>📄</div>
-                    <h2 style={{ fontSize: '24px', marginBottom: '20px', fontWeight: '600' }}>
-                        Upload Research Paper
+                    <h2 style={{
+                        fontSize: theme.typography.h3,
+                        fontWeight: theme.typography.bold,
+                        marginBottom: theme.spacing.lg
+                    }}>
+                        Upload Paper
                     </h2>
 
                     <input
                         type="file"
                         accept=".pdf"
                         onChange={handleFileSelect}
-                        style={{
-                            display: 'none'
-                        }}
                         id="pdf-upload"
+                        style={{ display: 'none' }}
                     />
 
-                    <label
-                        htmlFor="pdf-upload"
-                        style={{
-                            display: 'inline-block',
-                            padding: '12px 30px',
-                            background: 'rgba(102, 126, 234, 0.2)',
-                            border: '1px solid #667eea',
-                            borderRadius: '8px',
-                            cursor: 'pointer',
-                            marginBottom: '20px',
-                            transition: 'all 0.2s'
-                        }}
-                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(102, 126, 234, 0.3)'}
-                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(102, 126, 234, 0.2)'}
-                    >
-                        Choose PDF File
-                    </label>
+                    <div style={{ display: 'flex', gap: theme.spacing.sm }}>
+                        <label
+                            htmlFor="pdf-upload"
+                            style={{
+                                padding: `${theme.spacing.md} ${theme.spacing.lg}`,
+                                border: `1px solid ${theme.colors.border}`,
+                                cursor: 'pointer',
+                                fontSize: theme.typography.body,
+                                transition: theme.transitions.normal,
+                                background: theme.colors.surface
+                            }}
+                        >
+                            {selectedFile ? selectedFile.name : 'Choose PDF'}
+                        </label>
 
-                    {selectedFile && (
-                        <div style={{ marginTop: '20px' }}>
-                            <p style={{ color: '#4ade80', marginBottom: '10px' }}>
-                                ✓ Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                            </p>
+                        {selectedFile && (
                             <button
                                 onClick={handleUpload}
                                 disabled={uploading}
                                 style={{
-                                    padding: '12px 40px',
-                                    background: uploading ? '#666' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                                    padding: `${theme.spacing.md} ${theme.spacing.xl}`,
+                                    background: uploading ? theme.colors.textSecondary : theme.colors.accent,
+                                    color: theme.colors.surface,
                                     border: 'none',
-                                    borderRadius: '8px',
-                                    color: 'white',
-                                    fontSize: '16px',
-                                    fontWeight: '600',
+                                    fontSize: theme.typography.body,
+                                    fontWeight: theme.typography.bold,
                                     cursor: uploading ? 'not-allowed' : 'pointer',
-                                    transition: 'transform 0.2s'
-                                }}
-                                onMouseEnter={(e) => !uploading && (e.currentTarget.style.transform = 'scale(1.05)')}
-                                onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
-                            >
-                                {uploading ? 'Uploading...' : 'Upload & Process'}
-                            </button>
-                        </div>
-                    )}
-
-                    <p style={{ marginTop: '20px', color: '#666', fontSize: '12px' }}>
-                        Backend: http://localhost:8000 • Max size: 50MB
-                    </p>
-                </div>
-
-                {/* AI Summary Display */}
-                {uploadedPaper && (
-                    <div style={{
-                        background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%)',
-                        padding: '40px',
-                        borderRadius: '16px',
-                        border: '1px solid rgba(102, 126, 234, 0.3)',
-                        marginBottom: '40px',
-                        animation: 'slideIn 0.5s ease-out'
-                    }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '24px' }}>
-                            <div>
-                                <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎉</div>
-                                <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '8px' }}>
-                                    {uploadedPaper.status === 'processed' ? 'AI Analysis Complete!' : 'Upload Successful!'}
-                                </h2>
-                                <p style={{ color: '#a0a0a0', fontSize: '16px' }}>
-                                    {uploadedPaper.title}
-                                </p>
-                            </div>
-                            <button
-                                onClick={() => setUploadedPaper(null)}
-                                style={{
-                                    padding: '8px 16px',
-                                    background: 'rgba(255, 255, 255, 0.1)',
-                                    border: '1px solid rgba(255, 255, 255, 0.2)',
-                                    borderRadius: '6px',
-                                    color: 'white',
-                                    cursor: 'pointer',
-                                    fontSize: '14px'
+                                    fontFamily: theme.typography.fontFamily
                                 }}
                             >
-                                ✕ Close
+                                {uploading ? 'Uploading...' : 'Upload'}
                             </button>
-                        </div>
-
-                        {uploadedPaper.summary && (
-                            <div style={{
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                padding: '24px',
-                                borderRadius: '12px',
-                                marginBottom: '20px'
-                            }}>
-                                <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span>📝</span> AI Summary
-                                </h3>
-                                <p style={{ color: '#e0e0e0', lineHeight: '1.8', fontSize: '16px', whiteSpace: 'pre-wrap' }}>
-                                    {uploadedPaper.summary}
-                                </p>
-                            </div>
-                        )}
-
-                        {uploadedPaper.key_contributions && (
-                            <div style={{
-                                background: 'rgba(255, 255, 255, 0.05)',
-                                padding: '24px',
-                                borderRadius: '12px',
-                                marginBottom: '20px'
-                            }}>
-                                <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                    <span>🎯</span> Key Contributions
-                                </h3>
-                                <div style={{ color: '#e0e0e0', lineHeight: '1.8', fontSize: '16px', whiteSpace: 'pre-wrap' }}>
-                                    {uploadedPaper.key_contributions}
-                                </div>
-                            </div>
-                        )}
-
-                        {uploadedPaper.text_length && (
-                            <div style={{
-                                display: 'flex',
-                                gap: '20px',
-                                flexWrap: 'wrap',
-                                marginBottom: '20px'
-                            }}>
-                                <div style={{
-                                    background: 'rgba(74, 222, 128, 0.1)',
-                                    padding: '12px 20px',
-                                    borderRadius: '8px',
-                                    border: '1px solid rgba(74, 222, 128, 0.3)'
-                                }}>
-                                    <div style={{ fontSize: '12px', color: '#4ade80', marginBottom: '4px' }}>Text Extracted</div>
-                                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#4ade80' }}>
-                                        {uploadedPaper.text_length.toLocaleString()} chars
-                                    </div>
-                                </div>
-                                <div style={{
-                                    background: 'rgba(102, 126, 234, 0.1)',
-                                    padding: '12px 20px',
-                                    borderRadius: '8px',
-                                    border: '1px solid rgba(102, 126, 234, 0.3)'
-                                }}>
-                                    <div style={{ fontSize: '12px', color: '#667eea', marginBottom: '4px' }}>Status</div>
-                                    <div style={{ fontSize: '20px', fontWeight: '700', color: '#667eea' }}>
-                                        {uploadedPaper.status === 'processed' ? '✓ Processed' : uploadedPaper.status}
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        {uploadedPaper.note && (
-                            <div style={{
-                                background: 'rgba(251, 191, 36, 0.1)',
-                                border: '1px solid rgba(251, 191, 36, 0.3)',
-                                padding: '16px',
-                                borderRadius: '8px',
-                                color: '#fbbf24',
-                                fontSize: '14px'
-                            }}>
-                                ⚠️ {uploadedPaper.note}
-                            </div>
                         )}
                     </div>
-                )}
+                </div>
 
                 {/* Papers List */}
                 <div>
-                    <h2 style={{ fontSize: '28px', marginBottom: '24px', fontWeight: '600' }}>
-                        Your Papers ({papers.length})
+                    <h2 style={{
+                        fontSize: theme.typography.h3,
+                        fontWeight: theme.typography.black,
+                        marginBottom: theme.spacing.lg
+                    }}>
+                        Papers ({papers.length})
                     </h2>
 
                     {papers.length === 0 ? (
                         <div style={{
-                            background: 'rgba(255,255,255,0.05)',
-                            padding: '60px',
-                            borderRadius: '16px',
+                            background: theme.colors.surface,
+                            border: `1px solid ${theme.colors.border}`,
+                            padding: theme.spacing.xxl,
                             textAlign: 'center'
                         }}>
-                            <div style={{ fontSize: '48px', marginBottom: '20px', opacity: 0.5 }}>📚</div>
-                            <p style={{ color: '#a0a0a0', fontSize: '18px' }}>
-                                No papers uploaded yet. Upload your first PDF to get started!
+                            <p style={{
+                                fontSize: theme.typography.h5,
+                                color: theme.colors.textSecondary
+                            }}>
+                                No papers yet
                             </p>
                         </div>
                     ) : (
-                        <div style={{ display: 'grid', gap: '20px' }}>
+                        <div style={{ display: 'grid', gap: theme.spacing.sm }}>
                             {papers.map((paper) => (
                                 <div
                                     key={paper.id}
                                     style={{
-                                        background: 'rgba(255,255,255,0.05)',
-                                        padding: '24px',
-                                        borderRadius: '12px',
-                                        border: '1px solid rgba(255,255,255,0.1)',
-                                        transition: 'transform 0.2s'
+                                        background: theme.colors.surface,
+                                        border: `1px solid ${theme.colors.border}`,
+                                        padding: theme.spacing.lg,
                                     }}
-                                    onMouseEnter={(e) => e.currentTarget.style.transform = 'translateX(4px)'}
-                                    onMouseLeave={(e) => e.currentTarget.style.transform = 'translateX(0)'}
                                 >
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start' }}>
-                                        <div style={{ flex: 1 }}>
-                                            <h3 style={{ fontSize: '20px', fontWeight: '600', marginBottom: '8px' }}>
-                                                {paper.title}
-                                            </h3>
-                                            {paper.authors && paper.authors.length > 0 && (
-                                                <p style={{ color: '#a0a0a0', fontSize: '14px', marginBottom: '12px' }}>
-                                                    {paper.authors.join(', ')}
-                                                </p>
-                                            )}
-                                            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                                                <span style={{
-                                                    padding: '4px 12px',
-                                                    background: paper.processed === 2 ? 'rgba(74, 222, 128, 0.2)' : 'rgba(251, 191, 36, 0.2)',
-                                                    color: paper.processed === 2 ? '#4ade80' : '#fbbf24',
-                                                    borderRadius: '6px',
-                                                    fontSize: '12px',
-                                                    fontWeight: '600'
-                                                }}>
-                                                    {paper.processed === 2 ? '✓ Processed' : '⏳ Processing'}
-                                                </span>
-                                                <span style={{ color: '#666', fontSize: '12px' }}>
-                                                    {new Date(paper.uploaded_at).toLocaleDateString()}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <button
-                                            style={{
-                                                padding: '8px 20px',
-                                                background: 'rgba(102, 126, 234, 0.2)',
-                                                border: '1px solid #667eea',
-                                                borderRadius: '6px',
-                                                color: '#667eea',
-                                                fontSize: '14px',
-                                                cursor: 'pointer'
-                                            }}
-                                        >
-                                            View Details
-                                        </button>
-                                    </div>
+                                    <h3 style={{
+                                        fontSize: theme.typography.h5,
+                                        fontWeight: theme.typography.bold,
+                                        marginBottom: theme.spacing.xs
+                                    }}>
+                                        {paper.title}
+                                    </h3>
+                                    <p style={{
+                                        fontSize: theme.typography.small,
+                                        color: theme.colors.textSecondary
+                                    }}>
+                                        {new Date(paper.created_at).toLocaleDateString()}
+                                    </p>
                                 </div>
                             ))}
                         </div>
                     )}
-                </div>
-
-                {/* Features Info */}
-                <div style={{ marginTop: '60px', padding: '40px', background: 'rgba(102, 126, 234, 0.1)', borderRadius: '16px' }}>
-                    <h3 style={{ fontSize: '24px', marginBottom: '20px', fontWeight: '600' }}>
-                        What You Get
-                    </h3>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-                        {[
-                            { icon: '🤖', title: 'AI Summaries', desc: 'Abstract, methodology, and key contributions' },
-                            { icon: '📝', title: 'Auto Citations', desc: 'APA, IEEE, and BibTeX formats' },
-                            { icon: '🔍', title: 'Semantic Search', desc: 'Find relevant content across all papers' },
-                            { icon: '📊', title: 'Key Insights', desc: 'Equations, limitations, and findings' }
-                        ].map((feature, idx) => (
-                            <div key={idx}>
-                                <div style={{ fontSize: '32px', marginBottom: '8px' }}>{feature.icon}</div>
-                                <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '4px' }}>{feature.title}</h4>
-                                <p style={{ color: '#a0a0a0', fontSize: '14px' }}>{feature.desc}</p>
-                            </div>
-                        ))}
-                    </div>
                 </div>
             </div>
         </div>
@@ -402,4 +209,3 @@ const ResearchCopilot = () => {
 };
 
 export default ResearchCopilot;
-

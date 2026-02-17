@@ -1,73 +1,99 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import theme from '../styles/theme';
 
 const SimpleLanding = () => {
     return (
         <div style={{
             minHeight: '100vh',
-            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
-            color: 'white',
-            padding: '40px 20px',
-            fontFamily: 'Inter, sans-serif'
+            background: theme.colors.background,
+            fontFamily: theme.typography.fontFamily,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
         }}>
-            <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-                <h1 style={{ fontSize: '60px', marginBottom: '20px', fontWeight: 'bold' }}>
-                    DeepWork OS
+            <div style={{ maxWidth: '1200px', padding: theme.spacing.xxl, textAlign: 'center' }}>
+                {/* Hero */}
+                <h1 style={{
+                    fontSize: theme.typography.hero,
+                    fontWeight: theme.typography.black,
+                    lineHeight: '0.9',
+                    marginBottom: theme.spacing.xl,
+                    letterSpacing: '-0.02em'
+                }}>
+                    DEEP
+                    <br />
+                    WORK
+                    <br />
+                    OS
                 </h1>
-                <p style={{ fontSize: '24px', color: '#a0a0a0', marginBottom: '40px' }}>
-                    Your AI-Powered Productivity Operating System
+
+                <p style={{
+                    fontSize: theme.typography.h4,
+                    color: theme.colors.textSecondary,
+                    marginBottom: theme.spacing.xxxl,
+                    maxWidth: '700px',
+                    margin: `0 auto ${theme.spacing.xxxl}`
+                }}>
+                    AI-powered productivity platform for focused work and deep thinking.
                 </p>
 
-                <div style={{ marginBottom: '60px' }}>
-                    <Link
-                        to="/dashboard"
-                        style={{
-                            display: 'inline-block',
-                            padding: '15px 40px',
-                            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                            color: 'white',
-                            textDecoration: 'none',
-                            borderRadius: '8px',
-                            fontSize: '18px',
-                            fontWeight: '600'
-                        }}
-                    >
-                        Get Started →
-                    </Link>
-                </div>
+                {/* CTA */}
+                <Link
+                    to="/dashboard"
+                    style={{
+                        display: 'inline-block',
+                        padding: `${theme.spacing.lg} ${theme.spacing.xxl}`,
+                        background: theme.colors.accent,
+                        color: theme.colors.surface,
+                        textDecoration: 'none',
+                        fontSize: theme.typography.h5,
+                        fontWeight: theme.typography.bold,
+                        transition: theme.transitions.normal
+                    }}
+                    onMouseEnter={(e) => e.currentTarget.style.background = theme.colors.accentHover}
+                    onMouseLeave={(e) => e.currentTarget.style.background = theme.colors.accent}
+                >
+                    Get Started
+                </Link>
 
+                {/* Features */}
                 <div style={{
                     display: 'grid',
-                    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                    gap: '30px',
-                    marginTop: '80px'
+                    gridTemplateColumns: 'repeat(4, 1fr)',
+                    gap: theme.spacing.sm,
+                    marginTop: theme.spacing.xxxl
                 }}>
                     {[
-                        { title: 'Research Copilot', desc: 'AI-powered PDF analysis and citations' },
-                        { title: 'Smart Planner', desc: 'Optimize your schedule with AI' },
-                        { title: 'Meeting Summarizer', desc: 'Transform transcripts into insights' },
-                        { title: 'Knowledge Hub', desc: 'Semantic search across all content' }
+                        { title: 'Planner', desc: 'AI task scheduling' },
+                        { title: 'Meetings', desc: 'Auto summaries' },
+                        { title: 'Research', desc: 'Paper analysis' },
+                        { title: 'Knowledge', desc: 'Smart search' }
                     ].map((feature, idx) => (
-                        <div key={idx} style={{
-                            background: 'rgba(255,255,255,0.05)',
-                            padding: '30px',
-                            borderRadius: '12px',
-                            border: '1px solid rgba(255,255,255,0.1)'
-                        }}>
-                            <h3 style={{ fontSize: '20px', marginBottom: '10px' }}>{feature.title}</h3>
-                            <p style={{ color: '#a0a0a0', fontSize: '14px' }}>{feature.desc}</p>
+                        <div
+                            key={idx}
+                            style={{
+                                background: theme.colors.surface,
+                                border: `1px solid ${theme.colors.border}`,
+                                padding: theme.spacing.lg,
+                                textAlign: 'left'
+                            }}
+                        >
+                            <h3 style={{
+                                fontSize: theme.typography.h5,
+                                fontWeight: theme.typography.bold,
+                                marginBottom: theme.spacing.xs
+                            }}>
+                                {feature.title}
+                            </h3>
+                            <p style={{
+                                fontSize: theme.typography.body,
+                                color: theme.colors.textSecondary
+                            }}>
+                                {feature.desc}
+                            </p>
                         </div>
                     ))}
-                </div>
-
-                <div style={{ marginTop: '80px', padding: '40px', background: 'rgba(255,255,255,0.05)', borderRadius: '16px' }}>
-                    <h2 style={{ fontSize: '32px', marginBottom: '20px' }}>✅ Backend Running!</h2>
-                    <p style={{ color: '#a0a0a0', marginBottom: '20px' }}>
-                        API Server: <a href="http://localhost:8000/docs" target="_blank" style={{ color: '#667eea' }}>http://localhost:8000/docs</a>
-                    </p>
-                    <p style={{ color: '#4ade80', fontSize: '14px' }}>
-                        🎉 DeepWork OS is ready to use!
-                    </p>
                 </div>
             </div>
         </div>
