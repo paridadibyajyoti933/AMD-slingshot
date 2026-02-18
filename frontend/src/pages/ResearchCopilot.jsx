@@ -194,10 +194,42 @@ const ResearchCopilot = () => {
                                     </h3>
                                     <p style={{
                                         fontSize: theme.typography.small,
-                                        color: theme.colors.textSecondary
+                                        color: theme.colors.textSecondary,
+                                        marginBottom: theme.spacing.sm
                                     }}>
-                                        {new Date(paper.created_at).toLocaleDateString()}
+                                        {new Date(paper.uploaded_at || paper.created_at).toLocaleDateString()}
                                     </p>
+
+                                    {paper.processed === 1 ? (
+                                        <div style={{
+                                            padding: theme.spacing.sm,
+                                            background: theme.colors.background,
+                                            borderRadius: theme.borderRadius.sm,
+                                            fontSize: theme.typography.small,
+                                            color: theme.colors.accent
+                                        }}>
+                                            Processing summary...
+                                        </div>
+                                    ) : paper.abstract ? (
+                                        <p style={{
+                                            fontSize: theme.typography.body,
+                                            color: theme.colors.text,
+                                            lineHeight: '1.6',
+                                            marginTop: theme.spacing.sm
+                                        }}>
+                                            {paper.abstract.length > 300
+                                                ? `${paper.abstract.substring(0, 300)}...`
+                                                : paper.abstract}
+                                        </p>
+                                    ) : (
+                                        <p style={{
+                                            fontSize: theme.typography.small,
+                                            color: theme.colors.textSecondary,
+                                            fontStyle: 'italic'
+                                        }}>
+                                            No summary available
+                                        </p>
+                                    )}
                                 </div>
                             ))}
                         </div>
